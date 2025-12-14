@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Optional, Sequence
 
@@ -19,6 +20,22 @@ class SessionRow:
     @property
     def display_name(self) -> str:
         return self.name or "(unnamed)"
+
+    @property
+    def display_cwd(self) -> str:
+        return _abbrev_home(self.working_directory)
+
+
+def _abbrev_home(path: str) -> str:
+    raw = path.strip()
+    if not raw:
+        return ""
+    home = os.path.expanduser("~").rstrip("/")
+    if home and raw == home:
+        return "~"
+    if home and raw.startswith(home + "/"):
+        return "~/" + raw.removeprefix(home + "/")
+    return raw
 
 
 @dataclass(frozen=True)

@@ -69,7 +69,7 @@ class It2uiApp(App[None]):
             active = "▶" if row.is_active else ""
             table.add_row(
                 active,
-                row.working_directory,
+                row.display_cwd,
                 row.command_line,
                 row.display_name,
             )
