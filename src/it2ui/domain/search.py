@@ -19,6 +19,8 @@ def _normalize(query: str) -> str:
 def _candidate_text(row: SessionRow) -> str:
     parts = [
         row.display_name,
+        row.working_directory,
+        row.command_line,
         row.session_id,
         row.window_id,
         str(row.window_index),

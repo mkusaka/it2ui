@@ -12,6 +12,8 @@ class SessionRow:
     tab_index: int
     session_id: str
     name: str
+    working_directory: str
+    command_line: str
     is_active: bool
 
     @property
@@ -39,6 +41,8 @@ class Snapshot:
     class SessionSnapshot:
         session_id: str
         name: str
+        working_directory: str = ""
+        command_line: str = ""
 
     windows: Sequence[WindowSnapshot]
     active_session_id: Optional[str]
@@ -57,6 +61,8 @@ def rows_from_snapshot(snapshot: Snapshot) -> list[SessionRow]:
                         tab_index=tab.tab_index,
                         session_id=session.session_id,
                         name=session.name,
+                        working_directory=session.working_directory,
+                        command_line=session.command_line,
                         is_active=(snapshot.active_session_id == session.session_id),
                     )
                 )

@@ -14,8 +14,18 @@ def test_rows_from_snapshot_marks_active() -> None:
                         tab_id="t1",
                         tab_index=1,
                         sessions=[
-                            Snapshot.SessionSnapshot(session_id="s1", name="alpha"),
-                            Snapshot.SessionSnapshot(session_id="s2", name="bravo"),
+                            Snapshot.SessionSnapshot(
+                                session_id="s1",
+                                name="alpha",
+                                working_directory="/repo/a",
+                                command_line="zsh",
+                            ),
+                            Snapshot.SessionSnapshot(
+                                session_id="s2",
+                                name="bravo",
+                                working_directory="/repo/b",
+                                command_line="vim",
+                            ),
                         ],
                     )
                 ],
@@ -27,3 +37,5 @@ def test_rows_from_snapshot_marks_active() -> None:
     rows = rows_from_snapshot(snap)
     assert [r.session_id for r in rows] == ["s1", "s2"]
     assert [r.is_active for r in rows] == [False, True]
+    assert rows[0].working_directory == "/repo/a"
+    assert rows[1].command_line == "vim"

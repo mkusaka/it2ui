@@ -22,7 +22,12 @@ class FakeBackend:
 
 def _snapshot(names: list[str]) -> Snapshot:
     sessions = [
-        Snapshot.SessionSnapshot(session_id=f"s{i}", name=name)
+        Snapshot.SessionSnapshot(
+            session_id=f"s{i}",
+            name=name,
+            working_directory=f"/repo/{name}",
+            command_line=f"cmd {name}",
+        )
         for i, name in enumerate(names, start=1)
     ]
     return Snapshot(

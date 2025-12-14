@@ -65,10 +65,33 @@ class Iterm2Backend:
                     session_id = _string_id(
                         getattr(session, "session_id", None) or getattr(session, "id", None)
                     )
+                    working_directory = await _get_first_session_var(
+                        session,
+                        [
+                            "session.path",
+                            "session.workingDirectory",
+                            "session.working_directory",
+                            "session.currentDirectory",
+                            "session.cwd",
+                        ],
+                    )
+                    command_line = await _get_first_session_var(
+                        session,
+                        [
+                            "session.commandLine",
+                            "session.command_line",
+                            "session.command",
+                            "session.job",
+                            "session.foregroundCommandLine",
+                            "session.foregroundJob",
+                        ],
+                    )
                     sessions.append(
                         Snapshot.SessionSnapshot(
                             session_id=session_id,
                             name=_safe_session_name(session),
+                            working_directory=working_directory,
+                            command_line=command_line,
                         )
                     )
 
@@ -173,6 +196,31 @@ def _string_id(value: Any) -> str:
         return ""
     if isinstance(value, str):
         return value
+    try:
+        return str(value)
+    except Exception:
+        return ""
+
+
+async def _get_first_session_var(session: Any, names: list[str]) -> str:
+    for name in names:
+        try:
+            value: Any = await session.async_get_variable(name)
+        except Exception:
+            continue
+        text = _to_text(value).strip()
+        if text:
+            return text
+    return ""
+
+
+def _to_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        return " ".join(_to_text(v) for v in value)
     try:
         return str(value)
     except Exception:

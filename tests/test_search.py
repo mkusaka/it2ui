@@ -12,6 +12,8 @@ def _row(session_id: str, name: str) -> SessionRow:
         tab_index=1,
         session_id=session_id,
         name=name,
+        working_directory="/tmp",
+        command_line="zsh",
         is_active=False,
     )
 

@@ -30,8 +30,18 @@ def _snapshot() -> Snapshot:
                         tab_id="t1",
                         tab_index=1,
                         sessions=[
-                            Snapshot.SessionSnapshot(session_id="s1", name="alpha"),
-                            Snapshot.SessionSnapshot(session_id="s2", name="bravo"),
+                            Snapshot.SessionSnapshot(
+                                session_id="s1",
+                                name="alpha",
+                                working_directory="/repo/a",
+                                command_line="zsh",
+                            ),
+                            Snapshot.SessionSnapshot(
+                                session_id="s2",
+                                name="bravo",
+                                working_directory="/repo/b",
+                                command_line="vim",
+                            ),
                         ],
                     )
                 ],

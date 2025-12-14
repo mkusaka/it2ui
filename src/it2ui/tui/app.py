@@ -55,7 +55,7 @@ class It2uiApp(App[None]):
     async def on_mount(self) -> None:
         table: DataTable[str] = self.query_one(DataTable)
         table.cursor_type = "row"
-        table.add_columns("*", "Win", "Tab", "Session", "Name")
+        table.add_columns("*", "Cwd", "Command", "Name")
         self.query_one("#search", Input).focus()
         self._render()
 
@@ -69,9 +69,8 @@ class It2uiApp(App[None]):
             active = "▶" if row.is_active else ""
             table.add_row(
                 active,
-                f"{row.window_index}:{row.window_id}",
-                f"{row.tab_index}:{row.tab_id}",
-                row.session_id,
+                row.working_directory,
+                row.command_line,
                 row.display_name,
             )
             self._row_index.append(_TableRow(session_id=row.session_id))
