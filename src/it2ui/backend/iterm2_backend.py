@@ -112,17 +112,12 @@ class Iterm2Backend:
         except Exception as e:
             raise BackendError("Failed to import iterm2.") from e
 
-        tab_mod: Any = getattr(iterm2, "tab")
-        nav: Any = getattr(tab_mod, "NavigationDirection")
-        mapping = {
-            PaneDirection.LEFT: getattr(nav, "LEFT"),
-            PaneDirection.DOWN: getattr(nav, "DOWN"),
-            PaneDirection.UP: getattr(nav, "UP"),
-            PaneDirection.RIGHT: getattr(nav, "RIGHT"),
-        }
+        nav_dir = _nav_direction_for(iterm2, direction)
+        if nav_dir is None:
+            return False
 
         try:
-            await tab.async_select_pane_in_direction(mapping[direction])
+            await tab.async_select_pane_in_direction(nav_dir)
             return True
         except Exception:
             return False
@@ -202,3 +197,25 @@ def _string_id(value: Any) -> str:
         return str(value)
     except Exception:
         return ""
+
+
+def _nav_direction_for(iterm2: Any, direction: PaneDirection) -> Any | None:
+    """Return iterm2.tab.NavigationDirection value for the requested direction.
+
+    iTerm2 versions differ: some use UP/DOWN, others use ABOVE/BELOW.
+    """
+    try:
+        tab_mod: Any = iterm2.tab
+        nav: Any = tab_mod.NavigationDirection
+    except Exception:
+        return None
+
+    if direction is PaneDirection.LEFT:
+        return getattr(nav, "LEFT", None)
+    if direction is PaneDirection.RIGHT:
+        return getattr(nav, "RIGHT", None)
+    if direction is PaneDirection.UP:
+        return getattr(nav, "UP", None) or getattr(nav, "ABOVE", None)
+    if direction is PaneDirection.DOWN:
+        return getattr(nav, "DOWN", None) or getattr(nav, "BELOW", None)
+    return None
