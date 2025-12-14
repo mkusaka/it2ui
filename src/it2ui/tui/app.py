@@ -148,14 +148,6 @@ class It2uiApp(App[None]):
                 focused.action_delete_left()
                 event.stop()
                 return
-            if event.key == "ctrl+a":
-                focused.action_home()
-                event.stop()
-                return
-            if event.key == "ctrl+e":
-                focused.action_end()
-                event.stop()
-                return
 
         if event.key != "ctrl+c":
             self._last_ctrl_c_at = None

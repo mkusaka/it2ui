@@ -201,3 +201,24 @@ async def test_input_emacs_keys_ctrl_a_e_h() -> None:
         await pilot.press("ctrl+h")
         await pilot.pause(0)
         assert search.value == "abcy"
+
+
+@pytest.mark.asyncio
+async def test_input_ctrl_d_deletes_forward() -> None:
+    backend = FakeBackend(activated=[], _snapshot=_snapshot(["one"]), _events=asyncio.Queue())
+    app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["one"]))
+
+    async with app.run_test() as pilot:
+        await pilot.pause(0.2)
+        search = app.query_one("#search", Input)
+
+        for ch in "abc":
+            await pilot.press(ch)
+        await pilot.pause(0)
+        assert search.value == "abc"
+
+        await pilot.press("ctrl+a")
+        await pilot.press("right")
+        await pilot.press("ctrl+d")
+        await pilot.pause(0)
+        assert search.value == "ac"
