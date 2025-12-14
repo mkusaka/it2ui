@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from textual import events
 from textual.app import App, ComposeResult
@@ -21,13 +19,14 @@ class _TableRow:
 
 
 class It2uiApp(App[None]):
+    BINDINGS = [("ctrl+q", "quit_maybe", "Quit")]
+
     CSS = """
     Screen { layout: vertical; }
     #body { height: 1fr; }
-    #search_row { height: auto; }
+    #search_row { height: 3; }
     #search_label { color: $text-muted; }
     #search { width: 1fr; height: 3; }
-    #search_help { color: $text-muted; height: 3; content-align: right middle; }
     #status { height: auto; }
     Input { border: round $surface; }
     Input:focus { border: round $accent; }
@@ -37,7 +36,7 @@ class It2uiApp(App[None]):
         super().__init__()
         self.controller = ItwmController(backend=backend, initial_snapshot=initial_snapshot)
         self._row_index: list[_TableRow] = []
-        self._last_ctrl_q_at: Optional[float] = None
+        self._last_ctrl_q_at: float | None = None
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -45,9 +44,6 @@ class It2uiApp(App[None]):
             with Horizontal(id="search_row"):
                 yield Static("Search:", id="search_label")
                 yield Input(placeholder="Type to filter (fuzzy).", id="search")
-                yield Static(
-                    "Esc: clear • ↑↓: select • Enter: activate • Ctrl+Q: quit", id="search_help"
-                )
             yield DataTable(id="table")
             yield Static("", id="status")
         yield Footer()
@@ -91,24 +87,22 @@ class It2uiApp(App[None]):
     def _render_status(self) -> None:
         query = self.controller.state.query.strip()
         query_part = f'Query: "{query}"' if query else "Query: (empty)"
-        hint = " Enter: activate  Up/Down: select  Ctrl+HJKL: pane  Ctrl+Q: quit"
+        hint = " Enter: activate  Up/Down: select  Ctrl+HJKL: pane  Ctrl+Q x2: quit"
         status = self.controller.state.status.strip()
         status_part = f" | {status}" if status else ""
         self.query_one("#status", Static).update(f"{query_part}{status_part}{hint}")
 
-    async def on_key(self, event: events.Key) -> None:
-        # Double-press Ctrl+Q to quit (to avoid accidental exits).
-        if event.key == "ctrl+q":
-            now = time.monotonic()
-            if self._last_ctrl_q_at is not None and (now - self._last_ctrl_q_at) <= 0.75:
-                self.exit()
-            else:
-                self._last_ctrl_q_at = now
-                self._status("Press Ctrl+Q again to quit")
-            event.stop()
+    def action_quit_maybe(self) -> None:
+        now = time.monotonic()
+        if self._last_ctrl_q_at is not None and (now - self._last_ctrl_q_at) <= 0.75:
+            self.exit()
             return
+        self._last_ctrl_q_at = now
+        self._status("Press Ctrl+Q again to quit")
 
-        self._last_ctrl_q_at = None
+    async def on_key(self, event: events.Key) -> None:
+        if event.key != "ctrl+q":
+            self._last_ctrl_q_at = None
 
         if event.key == "escape":
             search = self.query_one("#search", Input)
