@@ -142,6 +142,21 @@ class It2uiApp(App[None]):
         self.action_quit_maybe()
 
     async def on_key(self, event: events.Key) -> None:
+        focused = self.focused
+        if isinstance(focused, Input) and focused.id == "search":
+            if event.key == "ctrl+h":
+                focused.action_delete_left()
+                event.stop()
+                return
+            if event.key == "ctrl+a":
+                focused.action_home()
+                event.stop()
+                return
+            if event.key == "ctrl+e":
+                focused.action_end()
+                event.stop()
+                return
+
         if event.key != "ctrl+c":
             self._last_ctrl_c_at = None
 

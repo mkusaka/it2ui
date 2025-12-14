@@ -164,3 +164,40 @@ async def test_backend_event_refreshes_snapshot() -> None:
         backend.push_refresh()
         await pilot.pause(0.5)
         assert table.row_count == 1
+
+
+@pytest.mark.asyncio
+async def test_input_emacs_keys_ctrl_a_e_h() -> None:
+    backend = FakeBackend(activated=[], _snapshot=_snapshot(["one"]), _events=asyncio.Queue())
+    app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["one"]))
+
+    async with app.run_test() as pilot:
+        await pilot.pause(0.2)
+        search = app.query_one("#search", Input)
+
+        for ch in "abc":
+            await pilot.press(ch)
+        await pilot.pause(0)
+        assert search.value == "abc"
+
+        await pilot.press("ctrl+a")
+        await pilot.pause(0)
+        assert search.cursor_position == 0
+
+        await pilot.press("x")
+        await pilot.pause(0)
+        assert search.value == "xabc"
+
+        await pilot.press("ctrl+e")
+        await pilot.pause(0)
+        assert search.cursor_position == len(search.value)
+
+        await pilot.press("y")
+        await pilot.pause(0)
+        assert search.value == "xabcy"
+
+        await pilot.press("ctrl+a")
+        await pilot.press("right")
+        await pilot.press("ctrl+h")
+        await pilot.pause(0)
+        assert search.value == "abcy"
