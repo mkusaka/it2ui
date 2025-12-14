@@ -33,6 +33,10 @@ uv run it2ui
 
 - Typing: filter by query (incremental)
 - `Backspace`: delete one character from the query
+- `Ctrl-h`: backspace (delete left)
+- `Ctrl-d`: delete right
+- `Ctrl-a`: move cursor to start
+- `Ctrl-e`: move cursor to end
 - `Esc`: clear the query
 - `Up/Down`: move selection
 - `Enter`: activate selected session
