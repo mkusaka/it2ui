@@ -58,6 +58,5 @@ uv run ruff check src/it2ui tests
 
 ## Future work (optional)
 
-- Layout save/restore
-- Pane resizing commands
-- Background daemon / global hotkey integration
+- Session details panel (cwd/command/title/profile)
+- Preview: stream recent screen contents for the selected session (optional / behind a toggle)
