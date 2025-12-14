@@ -31,8 +31,9 @@ uv run it2ui
 
 ### Keys
 
-- `/` or `Ctrl-f`: focus search
-- `Esc`: leave search (and clear query)
+- `/` or `Ctrl-f`: focus search (edit mode)
+- Typing while in navigate mode: start search and append typed character
+- `Esc`: leave search (back to navigate mode)
 - `Enter`: activate selected session
 - `Ctrl-h/j/k/l`: focus adjacent pane (left/down/up/right)
 - `q`: quit
