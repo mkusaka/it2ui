@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 
 import pytest
 
-from itwm.backend.protocol import PaneDirection
-from itwm.domain.controller import ItwmController
-from itwm.domain.models import Snapshot, TabSnapshot, WindowSnapshot
+from it2ui.backend.protocol import PaneDirection
+from it2ui.domain.controller import ItwmController
+from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 
 
 @dataclass
@@ -64,4 +63,3 @@ async def test_move_pane_uses_direction_and_handles_no_pane() -> None:
     await c.move_pane(PaneDirection.LEFT)
     assert backend.moved == [PaneDirection.LEFT]
     assert c.state.status == "No pane in that direction"
-

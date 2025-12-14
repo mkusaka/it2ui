@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Sequence
 
-from itwm.backend.protocol import Backend, PaneDirection
-from itwm.domain.models import SessionRow, Snapshot, rows_from_snapshot
-from itwm.domain.search import filter_and_rank
+from it2ui.backend.protocol import Backend, PaneDirection
+from it2ui.domain.models import SessionRow, Snapshot, rows_from_snapshot
+from it2ui.domain.search import filter_and_rank
 
 
 @dataclass
@@ -75,4 +75,3 @@ class ItwmController:
             if row.is_active:
                 self.state.selected_index = i
                 break
-

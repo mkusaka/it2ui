@@ -61,4 +61,3 @@ def rows_from_snapshot(snapshot: Snapshot) -> list[SessionRow]:
                     )
                 )
     return rows
-

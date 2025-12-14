@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
-from itwm.domain.models import SessionRow
+from it2ui.domain.models import SessionRow
 
 
 @dataclass(frozen=True)

@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable, Optional
 
-from itwm.backend.protocol import BackendError, PaneDirection
-from itwm.domain.models import Snapshot, TabSnapshot, WindowSnapshot
+from it2ui.backend.protocol import BackendError, PaneDirection
+from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 
 
 def _safe_session_name(session: Any) -> str:

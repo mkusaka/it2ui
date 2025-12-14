@@ -1,5 +1,5 @@
 [project]
-name = "itwm"
+name = "it2ui"
 version = "0.1.0"
 description = "TUI to list/search/focus iTerm2 sessions and move pane focus."
 readme = "README.md"
@@ -19,7 +19,7 @@ dev = [
 ]
 
 [project.scripts]
-itwm = "itwm.cli:main"
+it2ui = "it2ui.cli:main"
 
 [build-system]
 requires = ["hatchling>=1.25.0"]

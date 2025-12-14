@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from itwm.domain.models import Snapshot, TabSnapshot, WindowSnapshot, rows_from_snapshot
+from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot, rows_from_snapshot
 
 
 def test_rows_from_snapshot_marks_active() -> None:
@@ -27,4 +27,3 @@ def test_rows_from_snapshot_marks_active() -> None:
     rows = rows_from_snapshot(snap)
     assert [r.session_id for r in rows] == ["s1", "s2"]
     assert [r.is_active for r in rows] == [False, True]
-

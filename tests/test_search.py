@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from itwm.domain.models import SessionRow
-from itwm.domain.search import filter_and_rank
+from it2ui.domain.models import SessionRow
+from it2ui.domain.search import filter_and_rank
 
 
 def _row(session_id: str, name: str) -> SessionRow:

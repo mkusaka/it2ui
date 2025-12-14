@@ -11,7 +11,7 @@ class CliResult:
 
 
 def _print_error(message: str) -> None:
-    print(f"itwm: {message}", file=sys.stderr)
+    print(f"it2ui: {message}", file=sys.stderr)
 
 
 def main() -> None:
@@ -24,8 +24,8 @@ def main() -> None:
         raise SystemExit(2)
 
     async def _amain(connection: object) -> None:
-        from itwm.backend.iterm2_backend import Iterm2Backend
-        from itwm.tui.app import ItwmApp
+        from it2ui.backend.iterm2_backend import Iterm2Backend
+        from it2ui.tui.app import It2uiApp
 
         backend = Iterm2Backend(connection)
 
@@ -35,7 +35,7 @@ def main() -> None:
             _print_error(str(e))
             raise SystemExit(1)
 
-        app = ItwmApp(backend=backend, initial_snapshot=snapshot)
+        app = It2uiApp(backend=backend, initial_snapshot=snapshot)
         await app.run_async()
 
     try:

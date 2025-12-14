@@ -9,9 +9,9 @@ from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, Header, Input, Static
 
-from itwm.backend.protocol import Backend, PaneDirection
-from itwm.domain.controller import ItwmController
-from itwm.domain.models import Snapshot
+from it2ui.backend.protocol import Backend, PaneDirection
+from it2ui.domain.controller import ItwmController
+from it2ui.domain.models import Snapshot
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class _TableRow:
     session_id: str
 
 
-class ItwmApp(App[None]):
+class It2uiApp(App[None]):
     CSS = """
     Screen { layout: vertical; }
     #body { height: 1fr; }

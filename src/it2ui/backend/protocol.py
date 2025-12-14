@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
-from itwm.domain.models import Snapshot
+from it2ui.domain.models import Snapshot
 
 
 class PaneDirection(Enum):
@@ -28,4 +28,3 @@ class Backend(Protocol):
     async def activate_session(self, session_id: str) -> None: ...
 
     async def select_pane(self, direction: PaneDirection) -> bool: ...
-
