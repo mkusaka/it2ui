@@ -1,0 +1,39 @@
+[project]
+name = "itwm"
+version = "0.1.0"
+description = "TUI to list/search/focus iTerm2 sessions and move pane focus."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "mkusaka" }]
+dependencies = [
+  "textual>=0.66.0",
+  "rapidfuzz>=3.6.0",
+  "iterm2>=2.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-asyncio>=0.23.0",
+  "mypy>=1.10.0",
+]
+
+[project.scripts]
+itwm = "itwm.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true
+ignore_missing_imports = true
+mypy_path = ["src"]
