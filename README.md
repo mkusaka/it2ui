@@ -15,7 +15,7 @@ iTerm2 の Window / Tab / Session を一覧・検索し、選択した Session �
 uv sync
 ```
 
-依存関係を更新した場合は `uv lock` を実行して `uv.lock` を更新してください。
+`uv.lock` は任意です（CI は有無どちらでも動くようにしています）。固定したい場合はローカルで `uv lock` して `uv.lock` をコミットしてください。
 
 開発（pytest/mypy）を使う場合:
 
