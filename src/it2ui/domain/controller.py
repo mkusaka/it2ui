@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Sequence
 
-from it2ui.backend.protocol import Backend, PaneDirection
+from it2ui.backend.protocol import Backend
 from it2ui.domain.models import SessionRow, Snapshot, rows_from_snapshot
 from it2ui.domain.search import filter_and_rank
 
@@ -57,13 +57,6 @@ class ItwmController:
             return
         await self.backend.activate_session(row.session_id)
         self.state.status = f"Activated {row.display_name}"
-
-    async def move_pane(self, direction: PaneDirection) -> None:
-        ok = await self.backend.select_pane(direction)
-        if ok:
-            self.state.status = f"Pane: {direction.value}"
-        else:
-            self.state.status = "No pane in that direction"
 
     def list_rows(self) -> Sequence[SessionRow]:
         return self.state.filtered_rows

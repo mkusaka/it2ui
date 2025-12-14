@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Iterable, Optional
 
-from it2ui.backend.protocol import BackendError, PaneDirection
+from it2ui.backend.protocol import BackendError
 from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 
 
@@ -102,26 +102,6 @@ class Iterm2Backend:
                 "Failed to activate session. Ensure iTerm2 is running and the Python API is permitted."
             ) from e
 
-    async def select_pane(self, direction: PaneDirection) -> bool:
-        tab = await self._current_tab()
-        if tab is None:
-            return False
-
-        try:
-            import iterm2
-        except Exception as e:
-            raise BackendError("Failed to import iterm2.") from e
-
-        nav_dir = _nav_direction_for(iterm2, direction)
-        if nav_dir is None:
-            return False
-
-        try:
-            await tab.async_select_pane_in_direction(nav_dir)
-            return True
-        except Exception:
-            return False
-
     async def _current_tab(self) -> Optional[Any]:
         try:
             import iterm2
@@ -197,25 +177,3 @@ def _string_id(value: Any) -> str:
         return str(value)
     except Exception:
         return ""
-
-
-def _nav_direction_for(iterm2: Any, direction: PaneDirection) -> Any | None:
-    """Return iterm2.tab.NavigationDirection value for the requested direction.
-
-    iTerm2 versions differ: some use UP/DOWN, others use ABOVE/BELOW.
-    """
-    try:
-        tab_mod: Any = iterm2.tab
-        nav: Any = tab_mod.NavigationDirection
-    except Exception:
-        return None
-
-    if direction is PaneDirection.LEFT:
-        return getattr(nav, "LEFT", None)
-    if direction is PaneDirection.RIGHT:
-        return getattr(nav, "RIGHT", None)
-    if direction is PaneDirection.UP:
-        return getattr(nav, "UP", None) or getattr(nav, "ABOVE", None)
-    if direction is PaneDirection.DOWN:
-        return getattr(nav, "DOWN", None) or getattr(nav, "BELOW", None)
-    return None

@@ -8,7 +8,7 @@ from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, Header, Input, Static
 
-from it2ui.backend.protocol import Backend, PaneDirection
+from it2ui.backend.protocol import Backend
 from it2ui.domain.controller import ItwmController
 from it2ui.domain.models import Snapshot
 
@@ -24,10 +24,6 @@ class It2uiApp(App[None]):
         ("enter", "activate", "Activate"),
         ("up", "select_up", "Up"),
         ("down", "select_down", "Down"),
-        ("ctrl+h", "pane_left", "Pane←"),
-        ("ctrl+j", "pane_down", "Pane↓"),
-        ("ctrl+k", "pane_up", "Pane↑"),
-        ("ctrl+l", "pane_right", "Pane→"),
         ("ctrl+q", "quit_maybe", "Quit"),
     ]
 
@@ -129,22 +125,6 @@ class It2uiApp(App[None]):
     def action_select_down(self) -> None:
         self.controller.select_index(self.controller.state.selected_index + 1)
         self._render()
-
-    async def _pane(self, direction: PaneDirection) -> None:
-        await self.controller.move_pane(direction)
-        self._render()
-
-    async def action_pane_left(self) -> None:
-        await self._pane(PaneDirection.LEFT)
-
-    async def action_pane_down(self) -> None:
-        await self._pane(PaneDirection.DOWN)
-
-    async def action_pane_up(self) -> None:
-        await self._pane(PaneDirection.UP)
-
-    async def action_pane_right(self) -> None:
-        await self._pane(PaneDirection.RIGHT)
 
     async def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         self.controller.select_index(self._table().cursor_row)

@@ -36,7 +36,6 @@ uv run it2ui
 - `Esc`: clear the query
 - `Up/Down`: move selection
 - `Enter`: activate selected session
-- `Ctrl-h/j/k/l`: focus adjacent pane (left/down/up/right)
 - `Ctrl-q` (press twice quickly): quit
 
 ## Tests / Typecheck

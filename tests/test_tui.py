@@ -5,7 +5,6 @@ from dataclasses import dataclass
 import pytest
 from textual.widgets import DataTable, Input
 
-from it2ui.backend.protocol import PaneDirection
 from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 from it2ui.tui.app import It2uiApp
 
@@ -13,17 +12,12 @@ from it2ui.tui.app import It2uiApp
 @dataclass
 class FakeBackend:
     activated: list[str]
-    moved: list[PaneDirection]
 
     async def snapshot(self) -> Snapshot:  # pragma: no cover
         raise AssertionError("not used")
 
     async def activate_session(self, session_id: str) -> None:
         self.activated.append(session_id)
-
-    async def select_pane(self, direction: PaneDirection) -> bool:
-        self.moved.append(direction)
-        return True
 
 
 def _snapshot(names: list[str]) -> Snapshot:
@@ -45,7 +39,7 @@ def _snapshot(names: list[str]) -> Snapshot:
 
 @pytest.mark.asyncio
 async def test_search_input_is_visible_and_typing_filters() -> None:
-    backend = FakeBackend(activated=[], moved=[])
+    backend = FakeBackend(activated=[])
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other"]))
 
     async with app.run_test() as pilot:
@@ -64,7 +58,7 @@ async def test_search_input_is_visible_and_typing_filters() -> None:
 
 @pytest.mark.asyncio
 async def test_query_change_resets_selection_to_top() -> None:
-    backend = FakeBackend(activated=[], moved=[])
+    backend = FakeBackend(activated=[])
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other", "third"]))
 
     async with app.run_test() as pilot:
@@ -80,7 +74,7 @@ async def test_query_change_resets_selection_to_top() -> None:
 
 @pytest.mark.asyncio
 async def test_enter_activates_selected_session_from_input() -> None:
-    backend = FakeBackend(activated=[], moved=[])
+    backend = FakeBackend(activated=[])
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other"]))
 
     async with app.run_test() as pilot:
@@ -97,7 +91,7 @@ async def test_enter_activates_selected_session_from_input() -> None:
 
 @pytest.mark.asyncio
 async def test_ctrl_q_requires_double_press() -> None:
-    backend = FakeBackend(activated=[], moved=[])
+    backend = FakeBackend(activated=[])
     exited = False
     toasts: list[str] = []
 
