@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 import pytest
 
+from it2ui.backend.protocol import BackendEvent
 from it2ui.domain.controller import ItwmController
 from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 
@@ -17,6 +19,10 @@ class FakeBackend:
 
     async def activate_session(self, session_id: str) -> None:
         self.activated.append(session_id)
+
+    async def events(self) -> AsyncIterator[BackendEvent]:
+        if False:  # pragma: no cover
+            yield BackendEvent(reason="never")
 
 
 def _snapshot() -> Snapshot:

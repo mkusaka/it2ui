@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 import pytest
 from textual.widgets import DataTable, Input
 
+from it2ui.backend.protocol import BackendEvent
 from it2ui.domain.models import Snapshot, TabSnapshot, WindowSnapshot
 from it2ui.tui.app import It2uiApp
 
@@ -12,12 +15,24 @@ from it2ui.tui.app import It2uiApp
 @dataclass
 class FakeBackend:
     activated: list[str]
+    _snapshot: Snapshot
+    _events: "asyncio.Queue[BackendEvent]"
 
-    async def snapshot(self) -> Snapshot:  # pragma: no cover
-        raise AssertionError("not used")
+    async def snapshot(self) -> Snapshot:
+        return self._snapshot
 
     async def activate_session(self, session_id: str) -> None:
         self.activated.append(session_id)
+
+    async def events(self) -> AsyncIterator[BackendEvent]:
+        while True:
+            yield await self._events.get()
+
+    def push_refresh(self) -> None:
+        self._events.put_nowait(BackendEvent(reason="test_refresh"))
+
+    def set_snapshot(self, snapshot: Snapshot) -> None:
+        self._snapshot = snapshot
 
 
 def _snapshot(names: list[str]) -> Snapshot:
@@ -44,7 +59,9 @@ def _snapshot(names: list[str]) -> Snapshot:
 
 @pytest.mark.asyncio
 async def test_search_input_is_visible_and_typing_filters() -> None:
-    backend = FakeBackend(activated=[])
+    backend = FakeBackend(
+        activated=[], _snapshot=_snapshot(["install", "other"]), _events=asyncio.Queue()
+    )
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other"]))
 
     async with app.run_test() as pilot:
@@ -63,7 +80,11 @@ async def test_search_input_is_visible_and_typing_filters() -> None:
 
 @pytest.mark.asyncio
 async def test_query_change_resets_selection_to_top() -> None:
-    backend = FakeBackend(activated=[])
+    backend = FakeBackend(
+        activated=[],
+        _snapshot=_snapshot(["install", "other", "third"]),
+        _events=asyncio.Queue(),
+    )
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other", "third"]))
 
     async with app.run_test() as pilot:
@@ -79,7 +100,9 @@ async def test_query_change_resets_selection_to_top() -> None:
 
 @pytest.mark.asyncio
 async def test_enter_activates_selected_session_from_input() -> None:
-    backend = FakeBackend(activated=[])
+    backend = FakeBackend(
+        activated=[], _snapshot=_snapshot(["install", "other"]), _events=asyncio.Queue()
+    )
     app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other"]))
 
     async with app.run_test() as pilot:
@@ -96,7 +119,7 @@ async def test_enter_activates_selected_session_from_input() -> None:
 
 @pytest.mark.asyncio
 async def test_ctrl_c_requires_double_press() -> None:
-    backend = FakeBackend(activated=[])
+    backend = FakeBackend(activated=[], _snapshot=_snapshot(["one"]), _events=asyncio.Queue())
     exited = False
     toasts: list[str] = []
 
@@ -123,3 +146,21 @@ async def test_ctrl_c_requires_double_press() -> None:
         await pilot.press("ctrl+c")
         await pilot.pause(0)
         assert exited is True
+
+
+@pytest.mark.asyncio
+async def test_backend_event_refreshes_snapshot() -> None:
+    backend = FakeBackend(
+        activated=[], _snapshot=_snapshot(["one", "two"]), _events=asyncio.Queue()
+    )
+    app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["one", "two"]))
+
+    async with app.run_test() as pilot:
+        await pilot.pause(0.2)
+        table = app.query_one("#table", DataTable)
+        assert table.row_count == 2
+
+        backend.set_snapshot(_snapshot(["one"]))
+        backend.push_refresh()
+        await pilot.pause(0.5)
+        assert table.row_count == 1

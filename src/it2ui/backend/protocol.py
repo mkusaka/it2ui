@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -14,7 +15,14 @@ class BackendError(Exception):
         return self.message
 
 
+@dataclass(frozen=True)
+class BackendEvent:
+    reason: str
+
+
 class Backend(Protocol):
     async def snapshot(self) -> Snapshot: ...
 
     async def activate_session(self, session_id: str) -> None: ...
+
+    def events(self) -> AsyncIterator[BackendEvent]: ...

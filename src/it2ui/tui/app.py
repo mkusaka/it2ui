@@ -1,3 +1,4 @@
+import asyncio
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -39,9 +40,13 @@ class It2uiApp(App[None]):
 
     def __init__(self, *, backend: Backend, initial_snapshot: Snapshot) -> None:
         super().__init__()
+        self.backend = backend
         self.controller = ItwmController(backend=backend, initial_snapshot=initial_snapshot)
         self._row_index: list[_TableRow] = []
         self._last_ctrl_c_at: float | None = None
+        self._events_task: asyncio.Task[None] | None = None
+        self._refresh_task: asyncio.Task[None] | None = None
+        self._refresh_pending = False
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -57,6 +62,39 @@ class It2uiApp(App[None]):
         table.cursor_type = "row"
         table.add_columns("*", "Name", "Cwd", "Command")
         self.query_one("#search", Input).focus()
+        self._render()
+        self._events_task = asyncio.create_task(self._watch_backend_events())
+
+    async def on_unmount(self) -> None:
+        for task in (self._events_task, self._refresh_task):
+            if task is not None:
+                task.cancel()
+
+    async def _watch_backend_events(self) -> None:
+        try:
+            async for _event in self.backend.events():
+                self._request_refresh()
+        except Exception as e:
+            self._status(str(e))
+
+    def _request_refresh(self) -> None:
+        self._refresh_pending = True
+        if self._refresh_task is None or self._refresh_task.done():
+            self._refresh_task = asyncio.create_task(self._debounced_refresh())
+
+    async def _debounced_refresh(self) -> None:
+        while self._refresh_pending:
+            self._refresh_pending = False
+            await asyncio.sleep(0.2)
+            await self._refresh_snapshot()
+
+    async def _refresh_snapshot(self) -> None:
+        try:
+            snapshot = await self.backend.snapshot()
+        except Exception as e:
+            self._status(str(e))
+            return
+        self.controller.set_rows_from_snapshot(snapshot)
         self._render()
 
     def _render(self) -> None:
