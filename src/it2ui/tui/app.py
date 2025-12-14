@@ -19,14 +19,22 @@ class _TableRow:
 
 
 class It2uiApp(App[None]):
-    BINDINGS = [("ctrl+q", "quit_maybe", "Quit")]
+    BINDINGS = [
+        ("escape", "clear_query", "Clear"),
+        ("enter", "activate", "Activate"),
+        ("up", "select_up", "Up"),
+        ("down", "select_down", "Down"),
+        ("ctrl+h", "pane_left", "Pane←"),
+        ("ctrl+j", "pane_down", "Pane↓"),
+        ("ctrl+k", "pane_up", "Pane↑"),
+        ("ctrl+l", "pane_right", "Pane→"),
+        ("ctrl+q", "quit_maybe", "Quit"),
+    ]
 
     CSS = """
     Screen { layout: vertical; }
     #body { height: 1fr; }
     #search_row { height: 3; }
-    #search_label { color: $text-muted; }
-    #search_label { width: 7; }
     #search { width: 1fr; height: 3; }
     #status { height: auto; }
     Input { background: $panel; border: round $accent; color: $text; }
@@ -43,7 +51,6 @@ class It2uiApp(App[None]):
         yield Header(show_clock=False)
         with Vertical(id="body"):
             with Horizontal(id="search_row"):
-                yield Static("Search:", id="search_label")
                 yield Input(placeholder="Type to filter (fuzzy).", id="search")
             yield DataTable(id="table")
             yield Static("", id="status")
@@ -86,12 +93,8 @@ class It2uiApp(App[None]):
         self._render_status()
 
     def _render_status(self) -> None:
-        query = self.controller.state.query.strip()
-        query_part = f'Query: "{query}"' if query else "Query: (empty)"
-        hint = " Enter: activate  Up/Down: select  Ctrl+HJKL: pane  Ctrl+Q x2: quit"
         status = self.controller.state.status.strip()
-        status_part = f" | {status}" if status else ""
-        self.query_one("#status", Static).update(f"{query_part}{status_part}{hint}")
+        self.query_one("#status", Static).update(status)
 
     def action_quit_maybe(self) -> None:
         now = time.monotonic()
@@ -99,7 +102,7 @@ class It2uiApp(App[None]):
             self.exit()
             return
         self._last_ctrl_q_at = now
-        self._status("Press Ctrl+Q again to quit")
+        self.notify("Press Ctrl+Q again to quit", timeout=0.75)
 
     async def action_quit(self) -> None:
         # Override Textual's default quit action to require a double-press.
@@ -109,37 +112,39 @@ class It2uiApp(App[None]):
         if event.key != "ctrl+q":
             self._last_ctrl_q_at = None
 
-        if event.key == "escape":
-            search = self.query_one("#search", Input)
-            search.value = ""
-            self.controller.set_query("")
-            self._render()
-            event.stop()
-            return
+    def action_clear_query(self) -> None:
+        search = self.query_one("#search", Input)
+        search.value = ""
+        self.controller.set_query("")
+        self._status("")
+        self._render()
 
-        if event.key in ("up", "down"):
-            delta = -1 if event.key == "up" else 1
-            self.controller.select_index(self.controller.state.selected_index + delta)
-            self._render()
-            event.stop()
-            return
+    async def action_activate(self) -> None:
+        await self._activate_selected()
 
-        if event.key == "enter":
-            await self._activate_selected()
-            event.stop()
-            return
+    def action_select_up(self) -> None:
+        self.controller.select_index(self.controller.state.selected_index - 1)
+        self._render()
 
-        if event.key in ("ctrl+h", "ctrl+j", "ctrl+k", "ctrl+l"):
-            mapping = {
-                "ctrl+h": PaneDirection.LEFT,
-                "ctrl+j": PaneDirection.DOWN,
-                "ctrl+k": PaneDirection.UP,
-                "ctrl+l": PaneDirection.RIGHT,
-            }
-            await self.controller.move_pane(mapping[event.key])
-            self._render()
-            event.stop()
-            return
+    def action_select_down(self) -> None:
+        self.controller.select_index(self.controller.state.selected_index + 1)
+        self._render()
+
+    async def _pane(self, direction: PaneDirection) -> None:
+        await self.controller.move_pane(direction)
+        self._render()
+
+    async def action_pane_left(self) -> None:
+        await self._pane(PaneDirection.LEFT)
+
+    async def action_pane_down(self) -> None:
+        await self._pane(PaneDirection.DOWN)
+
+    async def action_pane_up(self) -> None:
+        await self._pane(PaneDirection.UP)
+
+    async def action_pane_right(self) -> None:
+        await self._pane(PaneDirection.RIGHT)
 
     async def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         self.controller.select_index(self._table().cursor_row)
@@ -149,6 +154,7 @@ class It2uiApp(App[None]):
         if event.input.id != "search":
             return
         self.controller.set_query(event.value)
+        self._status("")
         self._render()
 
     async def _activate_selected(self) -> None:

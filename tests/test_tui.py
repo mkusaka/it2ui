@@ -66,6 +66,7 @@ async def test_search_input_is_visible_and_typing_filters() -> None:
 async def test_ctrl_q_requires_double_press() -> None:
     backend = FakeBackend(activated=[], moved=[])
     exited = False
+    toasts: list[str] = []
 
     class TestApp(It2uiApp):
         def exit(
@@ -73,6 +74,9 @@ async def test_ctrl_q_requires_double_press() -> None:
         ) -> None:
             nonlocal exited
             exited = True
+
+        def notify(self, message: object, *args: object, **kwargs: object) -> None:  # noqa: ANN401
+            toasts.append(str(message))
 
     app = TestApp(backend=backend, initial_snapshot=_snapshot(["one"]))
 
@@ -82,7 +86,7 @@ async def test_ctrl_q_requires_double_press() -> None:
         await pilot.press("ctrl+q")
         await pilot.pause(0)
         assert exited is False
-        assert "Press Ctrl+Q again to quit" in app.controller.state.status
+        assert any("Press Ctrl+Q again to quit" in m for m in toasts)
 
         await pilot.press("ctrl+q")
         await pilot.pause(0)
