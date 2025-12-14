@@ -357,6 +357,11 @@ async def _subscribe_session_variables(
 ) -> None:
     scope = getattr(iterm2, "VariableScopes", None)
     if scope is None:
+        variables_mod = getattr(iterm2, "variables", None)
+        scope = (
+            getattr(variables_mod, "VariableScopes", None) if variables_mod is not None else None
+        )
+    if scope is None:
         return
 
     for name in [
