@@ -154,8 +154,14 @@ class It2uiApp(App[None]):
         if event.input.id != "search":
             return
         self.controller.set_query(event.value)
+        self.controller.select_index(0)
         self._status("")
         self._render()
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.input.id != "search":
+            return
+        await self._activate_selected()
 
     async def _activate_selected(self) -> None:
         try:

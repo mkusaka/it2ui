@@ -63,6 +63,39 @@ async def test_search_input_is_visible_and_typing_filters() -> None:
 
 
 @pytest.mark.asyncio
+async def test_query_change_resets_selection_to_top() -> None:
+    backend = FakeBackend(activated=[], moved=[])
+    app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other", "third"]))
+
+    async with app.run_test() as pilot:
+        await pilot.pause(0.2)
+        await pilot.press("down")
+        await pilot.pause(0)
+        assert app.controller.state.selected_index == 1
+
+        await pilot.press("i")
+        await pilot.pause(0.05)
+        assert app.controller.state.selected_index == 0
+
+
+@pytest.mark.asyncio
+async def test_enter_activates_selected_session_from_input() -> None:
+    backend = FakeBackend(activated=[], moved=[])
+    app = It2uiApp(backend=backend, initial_snapshot=_snapshot(["install", "other"]))
+
+    async with app.run_test() as pilot:
+        await pilot.pause(0.2)
+        for ch in "install":
+            await pilot.press(ch)
+        await pilot.pause(0.05)
+
+        await pilot.press("enter")
+        await pilot.pause(0.2)
+
+    assert backend.activated == ["s1"]
+
+
+@pytest.mark.asyncio
 async def test_ctrl_q_requires_double_press() -> None:
     backend = FakeBackend(activated=[], moved=[])
     exited = False
