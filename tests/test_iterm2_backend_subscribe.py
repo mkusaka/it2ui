@@ -32,7 +32,10 @@ class _Notifications:
 
 class _Variables:
     class VariableScopes:
-        SESSION = "SESSION"
+        class _Scope:
+            value = 123
+
+        SESSION = _Scope()
 
 
 class _FakeIterm2:
@@ -58,6 +61,6 @@ async def test_subscribe_session_variables_uses_iterm2_variables_scope() -> None
     )
 
     assert iterm2.notifications.calls
-    assert all(scope == "SESSION" for scope, _name, _sid in iterm2.notifications.calls)
+    assert all(scope == 123 for scope, _name, _sid in iterm2.notifications.calls)
     assert all(sid == "s1" for _scope, _name, sid in iterm2.notifications.calls)
     assert len(tokens) == len(iterm2.notifications.calls)

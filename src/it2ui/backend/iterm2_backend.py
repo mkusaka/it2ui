@@ -364,6 +364,12 @@ async def _subscribe_session_variables(
     if scope is None:
         return
 
+    try:
+        session_scope: Any = getattr(scope, "SESSION")
+        session_scope_value: Any = getattr(session_scope, "value", session_scope)
+    except Exception:
+        return
+
     for name in [
         "session.path",
         "session.workingDirectory",
@@ -379,7 +385,7 @@ async def _subscribe_session_variables(
             token = await iterm2.notifications.async_subscribe_to_variable_change_notification(
                 connection,
                 on_change,
-                getattr(scope, "SESSION"),
+                session_scope_value,
                 name,
                 session_id,
             )
