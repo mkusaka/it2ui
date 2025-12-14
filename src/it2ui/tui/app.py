@@ -91,7 +91,7 @@ class It2uiApp(App[None]):
     def _render_status(self) -> None:
         query = self.controller.state.query.strip()
         query_part = f'Query: "{query}"' if query else "Query: (empty)"
-        hint = " / Ctrl+F: search  Enter: activate  Ctrl+HJKL: pane  q: quit"
+        hint = " / Ctrl+F: search  Up/Down: select  Enter: activate  Ctrl+HJKL: pane  q: quit"
         status = self.controller.state.status.strip()
         status_part = f" | {status}" if status else ""
         self.query_one("#status", Static).update(f"{query_part}{status_part}{hint}")
@@ -99,7 +99,9 @@ class It2uiApp(App[None]):
     def _render_search_hint(self) -> None:
         search = self._search_input()
         focused = "editing" if search.has_focus else "navigate"
-        self.query_one("#search_hint", Static).update(f"[{focused}]")
+        query = self.controller.state.query.strip()
+        query_part = f'"{query}"' if query else "(empty)"
+        self.query_one("#search_hint", Static).update(f"[{focused}] {query_part}")
 
     def _enter_search(self, *, initial_text: str = "") -> None:
         search = self._search_input()
@@ -115,7 +117,18 @@ class It2uiApp(App[None]):
         search = self._search_input()
         table = self._table()
 
+        if not search.has_focus and event.key == "q":
+            self.exit()
+            event.stop()
+            return
+
         if search.has_focus:
+            if event.key in ("up", "down"):
+                delta = -1 if event.key == "up" else 1
+                self.controller.select_index(table.cursor_row + delta)
+                self._render()
+                event.stop()
+                return
             if event.key == "escape":
                 table.focus()
                 self._render()
@@ -134,11 +147,6 @@ class It2uiApp(App[None]):
 
         if len(event.key) == 1 and event.key.isprintable():
             self._enter_search(initial_text=event.key)
-            event.stop()
-            return
-
-        if event.key == "q":
-            self.exit()
             event.stop()
             return
 
