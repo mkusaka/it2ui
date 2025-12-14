@@ -31,13 +31,13 @@ uv run it2ui
 
 ### Keys
 
-- `/` or `Ctrl-f`: focus search (edit mode)
-- Typing while in navigate mode: start search and append typed character
-- `Esc`: leave search (back to navigate mode)
-- `Up/Down`: move selection (works in both modes)
+- Typing: filter by query (incremental)
+- `Backspace`: delete one character from the query
+- `Esc`: clear the query
+- `Up/Down`: move selection
 - `Enter`: activate selected session
 - `Ctrl-h/j/k/l`: focus adjacent pane (left/down/up/right)
-- `q`: quit
+- `Ctrl-q`: quit
 
 ## Tests / Typecheck
 

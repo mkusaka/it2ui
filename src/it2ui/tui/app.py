@@ -7,7 +7,7 @@ from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, Header, Input, Static
+from textual.widgets import DataTable, Footer, Header, Static
 
 from it2ui.backend.protocol import Backend, PaneDirection
 from it2ui.domain.controller import ItwmController
@@ -25,11 +25,10 @@ class It2uiApp(App[None]):
     #body { height: 1fr; }
     #search_row { height: auto; }
     #search_label { color: $text-muted; }
-    #search_hint { color: $text-muted; }
-    #search { width: 1fr; }
+    #search_value { width: 1fr; }
+    #search_value { color: $text; }
+    #search_help { color: $text-muted; }
     #status { height: auto; }
-    Input { border: round $surface; }
-    Input:focus { border: round $accent; }
     """
 
     def __init__(self, *, backend: Backend, initial_snapshot: Snapshot) -> None:
@@ -42,8 +41,8 @@ class It2uiApp(App[None]):
         with Vertical(id="body"):
             with Horizontal(id="search_row"):
                 yield Static("Search:", id="search_label")
-                yield Input(placeholder="Type to filter (fuzzy). '/' or Ctrl+F to focus.", id="search")
-                yield Static("", id="search_hint")
+                yield Static("", id="search_value")
+                yield Static("Type to filter • Backspace: delete • Esc: clear • Ctrl+Q: quit", id="search_help")
             yield DataTable(id="table")
             yield Static("", id="status")
         yield Footer()
@@ -76,10 +75,7 @@ class It2uiApp(App[None]):
             self.controller.state.clamp_selection()
             table.cursor_coordinate = Coordinate(self.controller.state.selected_index, 0)
         self._render_status()
-        self._render_search_hint()
-
-    def _search_input(self) -> Input:
-        return self.query_one("#search", Input)
+        self._render_search_value()
 
     def _table(self) -> DataTable[Any]:
         return self.query_one("#table", DataTable)
@@ -91,62 +87,34 @@ class It2uiApp(App[None]):
     def _render_status(self) -> None:
         query = self.controller.state.query.strip()
         query_part = f'Query: "{query}"' if query else "Query: (empty)"
-        hint = " / Ctrl+F: search  Up/Down: select  Enter: activate  Ctrl+HJKL: pane  q: quit"
+        hint = " Enter: activate  Up/Down: select  Ctrl+HJKL: pane  Ctrl+Q: quit"
         status = self.controller.state.status.strip()
         status_part = f" | {status}" if status else ""
         self.query_one("#status", Static).update(f"{query_part}{status_part}{hint}")
 
-    def _render_search_hint(self) -> None:
-        search = self._search_input()
-        focused = "editing" if search.has_focus else "navigate"
+    def _render_search_value(self) -> None:
         query = self.controller.state.query.strip()
-        query_part = f'"{query}"' if query else "(empty)"
-        self.query_one("#search_hint", Static).update(f"[{focused}] {query_part}")
-
-    def _enter_search(self, *, initial_text: str = "") -> None:
-        search = self._search_input()
-        if initial_text:
-            search.value = search.value + initial_text
-            self.controller.set_query(search.value)
-        search.focus()
-        if not initial_text:
-            search.action_select_all()
-        self._render()
+        self.query_one("#search_value", Static).update(query)
 
     async def on_key(self, event: events.Key) -> None:
-        search = self._search_input()
         table = self._table()
 
-        if not search.has_focus and event.key == "q":
+        if event.key == "ctrl+q":
             self.exit()
             event.stop()
             return
 
-        if search.has_focus:
-            if event.key in ("up", "down"):
-                delta = -1 if event.key == "up" else 1
-                self.controller.select_index(table.cursor_row + delta)
-                self._render()
-                event.stop()
-                return
-            if event.key == "escape":
-                table.focus()
-                self._render()
-                event.stop()
-            elif event.key == "enter":
-                await self._activate_selected()
-                event.stop()
-            else:
-                return
-            return
-
-        if event.key in ("/", "ctrl+f"):
-            self._enter_search()
+        if event.key == "escape":
+            self.controller.set_query("")
+            self._render()
             event.stop()
             return
 
-        if len(event.key) == 1 and event.key.isprintable():
-            self._enter_search(initial_text=event.key)
+        if event.key == "backspace":
+            q = self.controller.state.query
+            if q:
+                self.controller.set_query(q[:-1])
+                self._render()
             event.stop()
             return
 
@@ -167,11 +135,11 @@ class It2uiApp(App[None]):
             event.stop()
             return
 
-    async def on_input_changed(self, event: Input.Changed) -> None:
-        if event.input.id != "search":
+        if len(event.key) == 1 and event.key.isprintable():
+            self.controller.set_query(self.controller.state.query + event.key)
+            self._render()
+            event.stop()
             return
-        self.controller.set_query(event.value)
-        self._render()
 
     async def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         self.controller.select_index(self._table().cursor_row)
