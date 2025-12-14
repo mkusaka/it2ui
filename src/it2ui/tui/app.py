@@ -26,9 +26,10 @@ class It2uiApp(App[None]):
     #body { height: 1fr; }
     #search_row { height: 3; }
     #search_label { color: $text-muted; }
+    #search_label { width: 7; }
     #search { width: 1fr; height: 3; }
     #status { height: auto; }
-    Input { border: round $surface; }
+    Input { background: $panel; border: round $accent; color: $text; }
     Input:focus { border: round $accent; }
     """
 
@@ -99,6 +100,10 @@ class It2uiApp(App[None]):
             return
         self._last_ctrl_q_at = now
         self._status("Press Ctrl+Q again to quit")
+
+    async def action_quit(self) -> None:
+        # Override Textual's default quit action to require a double-press.
+        self.action_quit_maybe()
 
     async def on_key(self, event: events.Key) -> None:
         if event.key != "ctrl+q":
