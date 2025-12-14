@@ -44,6 +44,8 @@ uv run it2ui
 ```bash
 uv run pytest
 uv run mypy src/it2ui tests
+uv run ruff format --check src/it2ui tests
+uv run ruff check src/it2ui tests
 ```
 
 ## Troubleshooting

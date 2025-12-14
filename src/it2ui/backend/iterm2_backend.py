@@ -50,7 +50,9 @@ class Iterm2Backend:
             iterm_windows = []
 
         for w_index, window in enumerate(iterm_windows, start=1):
-            window_id = _string_id(getattr(window, "window_id", None) or getattr(window, "id", None))
+            window_id = _string_id(
+                getattr(window, "window_id", None) or getattr(window, "id", None)
+            )
             tab_snaps: list[TabSnapshot] = []
 
             tabs: Iterable[Any] = getattr(window, "tabs", []) or []

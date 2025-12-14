@@ -29,3 +29,9 @@ jobs:
 
       - name: Mypy
         run: uv run mypy src/it2ui tests
+
+      - name: Ruff format (check)
+        run: uv run ruff format --check src/it2ui tests
+
+      - name: Ruff lint
+        run: uv run ruff check src/it2ui tests
