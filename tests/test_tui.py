@@ -95,7 +95,7 @@ async def test_enter_activates_selected_session_from_input() -> None:
 
 
 @pytest.mark.asyncio
-async def test_ctrl_q_requires_double_press() -> None:
+async def test_ctrl_c_requires_double_press() -> None:
     backend = FakeBackend(activated=[])
     exited = False
     toasts: list[str] = []
@@ -115,11 +115,11 @@ async def test_ctrl_q_requires_double_press() -> None:
     async with app.run_test() as pilot:
         await pilot.pause(0)
 
-        await pilot.press("ctrl+q")
+        await pilot.press("ctrl+c")
         await pilot.pause(0)
         assert exited is False
-        assert any("Press Ctrl+Q again to quit" in m for m in toasts)
+        assert any("Press Ctrl+C again to quit" in m for m in toasts)
 
-        await pilot.press("ctrl+q")
+        await pilot.press("ctrl+c")
         await pilot.pause(0)
         assert exited is True

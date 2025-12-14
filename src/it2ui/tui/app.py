@@ -24,7 +24,7 @@ class It2uiApp(App[None]):
         ("enter", "activate", "Activate"),
         ("up", "select_up", "Up"),
         ("down", "select_down", "Down"),
-        ("ctrl+q", "quit_maybe", "Quit"),
+        ("ctrl+c", "quit_maybe", "Quit"),
     ]
 
     CSS = """
@@ -41,7 +41,7 @@ class It2uiApp(App[None]):
         super().__init__()
         self.controller = ItwmController(backend=backend, initial_snapshot=initial_snapshot)
         self._row_index: list[_TableRow] = []
-        self._last_ctrl_q_at: float | None = None
+        self._last_ctrl_c_at: float | None = None
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -55,7 +55,7 @@ class It2uiApp(App[None]):
     async def on_mount(self) -> None:
         table: DataTable[str] = self.query_one(DataTable)
         table.cursor_type = "row"
-        table.add_columns("*", "Cwd", "Command", "Name")
+        table.add_columns("*", "Name", "Cwd", "Command")
         self.query_one("#search", Input).focus()
         self._render()
 
@@ -69,9 +69,9 @@ class It2uiApp(App[None]):
             active = "▶" if row.is_active else ""
             table.add_row(
                 active,
+                row.display_name,
                 row.display_cwd,
                 row.command_line,
-                row.display_name,
             )
             self._row_index.append(_TableRow(session_id=row.session_id))
 
@@ -93,19 +93,19 @@ class It2uiApp(App[None]):
 
     def action_quit_maybe(self) -> None:
         now = time.monotonic()
-        if self._last_ctrl_q_at is not None and (now - self._last_ctrl_q_at) <= 0.75:
+        if self._last_ctrl_c_at is not None and (now - self._last_ctrl_c_at) <= 0.75:
             self.exit()
             return
-        self._last_ctrl_q_at = now
-        self.notify("Press Ctrl+Q again to quit", timeout=0.75)
+        self._last_ctrl_c_at = now
+        self.notify("Press Ctrl+C again to quit", timeout=0.75)
 
     async def action_quit(self) -> None:
         # Override Textual's default quit action to require a double-press.
         self.action_quit_maybe()
 
     async def on_key(self, event: events.Key) -> None:
-        if event.key != "ctrl+q":
-            self._last_ctrl_q_at = None
+        if event.key != "ctrl+c":
+            self._last_ctrl_c_at = None
 
     def action_clear_query(self) -> None:
         search = self.query_one("#search", Input)
@@ -144,7 +144,9 @@ class It2uiApp(App[None]):
 
     async def _activate_selected(self) -> None:
         try:
-            await self.controller.activate_selected()
+            activated_name = await self.controller.activate_selected()
+            if activated_name:
+                self.notify(f"Focused: {activated_name}", timeout=0.75)
             self._render()
         except Exception as e:
             self._status(str(e))

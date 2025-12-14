@@ -1,6 +1,6 @@
 # it2ui
 
-`it2ui` is a TUI tool to list iTerm2 Window/Tab/Session, search them, and focus (activate) the selected session. It also supports moving focus to an adjacent pane with `Ctrl-h/j/k/l`. It is designed to run inside iTerm2 and connects via the iTerm2 Python API (`iterm2`). Layout save/restore and automated window/pane creation are explicitly out of scope for this repository.
+`it2ui` is a TUI tool to list iTerm2 sessions, search them, and focus (activate) the selected session. It is designed to run inside iTerm2 and connects via the iTerm2 Python API (`iterm2`). Layout save/restore and automated window/pane creation are explicitly out of scope for this repository.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ uv run it2ui
 - `Esc`: clear the query
 - `Up/Down`: move selection
 - `Enter`: activate selected session
-- `Ctrl-q` (press twice quickly): quit
+- `Ctrl-c` (press twice quickly): quit
 
 ## Tests / Typecheck
 

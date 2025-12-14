@@ -50,13 +50,14 @@ class ItwmController:
         self.state.selected_index = index
         self.state.clamp_selection()
 
-    async def activate_selected(self) -> None:
+    async def activate_selected(self) -> str | None:
         row = self.selected_row()
         if row is None:
             self.state.status = "No session selected"
-            return
+            return None
         await self.backend.activate_session(row.session_id)
-        self.state.status = f"Activated {row.display_name}"
+        self.state.status = ""
+        return row.display_name
 
     def list_rows(self) -> Sequence[SessionRow]:
         return self.state.filtered_rows
