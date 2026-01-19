@@ -148,6 +148,26 @@ class It2uiApp(App[None]):
                 focused.action_delete_left()
                 event.stop()
                 return
+            # Ctrl+A: move to beginning of line (macOS/Emacs style)
+            if event.key == "ctrl+a":
+                focused.action_home()
+                event.stop()
+                return
+            # Cmd+A: select all text in input (macOS style)
+            if event.key == "cmd+a":
+                focused.action_select_all()
+                event.stop()
+                return
+
+        # Ctrl+P/N: navigate selection up/down (Emacs style)
+        if event.key == "ctrl+p":
+            self.action_select_up()
+            event.stop()
+            return
+        if event.key == "ctrl+n":
+            self.action_select_down()
+            event.stop()
+            return
 
         if event.key != "ctrl+c":
             self._last_ctrl_c_at = None
