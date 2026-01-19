@@ -25,8 +25,13 @@ class It2uiApp(App[None]):
         ("enter", "activate", "Activate"),
         ("up", "select_up", "Up"),
         ("down", "select_down", "Down"),
+        ("ctrl+p", "select_up", "Up"),
+        ("ctrl+n", "select_down", "Down"),
         ("ctrl+c", "quit_maybe", "Quit"),
     ]
+
+    # Disable command palette to free up ctrl+p
+    COMMAND_PALETTE_BINDING = "ctrl+shift+p"
 
     CSS = """
     Screen { layout: vertical; }
@@ -158,16 +163,6 @@ class It2uiApp(App[None]):
                 focused.action_select_all()
                 event.stop()
                 return
-
-        # Ctrl+P/N: navigate selection up/down (Emacs style)
-        if event.key == "ctrl+p":
-            self.action_select_up()
-            event.stop()
-            return
-        if event.key == "ctrl+n":
-            self.action_select_down()
-            event.stop()
-            return
 
         if event.key != "ctrl+c":
             self._last_ctrl_c_at = None
