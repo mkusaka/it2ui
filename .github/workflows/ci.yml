@@ -17,12 +17,7 @@ jobs:
           python-version: "3.14"
 
       - name: Install dependencies
-        run: |
-          if [ -f uv.lock ]; then
-            uv sync --locked --extra dev
-          else
-            uv sync --extra dev
-          fi
+        run: uv sync --locked --extra dev
 
       - name: Pytest
         run: uv run pytest
