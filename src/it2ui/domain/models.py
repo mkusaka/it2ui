@@ -19,7 +19,8 @@ class SessionRow:
 
     @property
     def display_name(self) -> str:
-        return self.name or "(unnamed)"
+        name = self.name or "(unnamed)"
+        return f"[{self.window_index}:{self.tab_index}] {name}"
 
     @property
     def display_cwd(self) -> str:
