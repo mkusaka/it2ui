@@ -9,7 +9,39 @@
 - On the first run, iTerm2 will show a permission prompt; allow it.
   - If connection still fails, enable “Allow all apps to connect” or add your terminal app to the allowed list in iTerm2.
 
-## Install (uv)
+## Install
+
+### Run directly from GitHub (no install)
+
+```bash
+uvx git+https://github.com/mkusaka/it2ui.git
+```
+
+Runs in a temporary environment without installing. You can also use `pipx run`:
+
+```bash
+pipx run --spec git+https://github.com/mkusaka/it2ui.git it2ui
+```
+
+### Install from GitHub
+
+```bash
+uv tool install git+https://github.com/mkusaka/it2ui.git
+```
+
+This installs into an isolated virtual environment and adds the `it2ui` command to your PATH.
+
+You can also use pipx or pip:
+
+```bash
+# pipx
+pipx install git+https://github.com/mkusaka/it2ui.git
+
+# pip
+pip install git+https://github.com/mkusaka/it2ui.git
+```
+
+### Local development (uv sync)
 
 ```bash
 uv sync
